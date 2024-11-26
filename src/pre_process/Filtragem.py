@@ -18,7 +18,7 @@ colunas_relevantes = [
     'J014',  # Nas duas últimas semanas, procurou algum lugar, serviço ou profissional de saúde para atendimento relacionado à própria saúde
     'N010',  # Nas duas últimas semanas, com que frequência o(a) Sr(a) teve problemas no sono, como dificuldade para adormecer, acordar frequentemente à noite ou dormir mais do que de costume?
     'P050',  # Atualmente, o(a) Sr(a) fuma algum produto do tabaco?
-    'Q00201',  # Quando foi a última vez que o(a) Sr(a) teve sua pressão arterial alta
+    'Q00201',  # Algum médico já lhe deu o diagnóstico de hipertensão arterial (pressão alta)
     'P02602', #Em quantos dias da semana o(a) Sr(a) costuma substituir a refeição do almoço por lanches rápidos como sanduíches, salgados, pizza, cachorro quente, etc?
     'P02601', # Considerando a comida preparada na hora e os alimentos industrializados, o(a) Sr(a) acha que o seu consumo de sal é:
     'P02002', # Em quantos dias da semana o(a) Sr(a) costuma tomar refrigerante? 
