@@ -6,8 +6,7 @@ import numpy as np               # Operações matemáticas
 from sklearn.cluster import KMeans, DBSCAN  # Algoritmos de clusterização
 from sklearn.metrics import silhouette_score # Avaliação de clusters
 from scipy.cluster.hierarchy import linkage, fcluster, dendrogram # Clusterização hierárquica
-import umap  # Redução de dimensionalidade para visualização
-
+from sklearn.decomposition import PCA # Redução de dimensionalidade para visualização
 
 # %% Carregando os dados
 # Substitua pelo caminho correto para seu arquivo
@@ -76,39 +75,36 @@ plt.xlabel('Observações')
 plt.ylabel('Distância')
 plt.show()
 
-# %% Função de Visualização (com UMAP)
-def plot_clusters_umap_seaborn(data, labels, diagnostico, titulo):
+
+# %% Função de Visualização (com PCA)
+#%% 
+def plot_clusters_melhorado(data, labels, diagnostico, titulo):
     """
-    Gera um gráfico de dispersão 2D dos clusters usando o UMAP e o Seaborn.
+    Plota os clusters com melhor visualização usando Seaborn e tratamento de outliers.
 
     Args:
-        data:  Matriz NumPy ou DataFrame com os dados para redução de dimensionalidade (sem a coluna target).
-        labels: Array NumPy com os rótulos dos clusters para cada ponto de dados.
-        diagnostico: Array NumPy ou Series Pandas com os rótulos de diagnóstico (variável target) para cada ponto de dados.
-        titulo: String com o título do gráfico.
+        data: Dados para projetar (fatores), como um array NumPy ou DataFrame sem a coluna target.
+        labels: Rótulos dos clusters (array NumPy).
+        diagnostico: Variável target (array NumPy ou Series Pandas).
+        titulo: Título do gráfico (string).
     """
-    reducer = umap.UMAP(n_components=2, random_state=42)  # Inicializa o UMAP para reduzir a 2 dimensões. random_state garante reprodutibilidade.
-    embedding = reducer.fit_transform(data)  # Aplica o UMAP para reduzir a dimensionalidade dos dados.
+    pca = PCA(n_components=2) # Aplica PCA para reduzir a dimensionalidade para 2 componentes principais
+    reduced_data = pca.fit_transform(data) # Transforma os dados para o espaço de 2 dimensões
+    df_plot = pd.DataFrame({'PC1': reduced_data[:, 0], 'PC2': reduced_data[:, 1], 'Cluster': labels, 'Diagnóstico': diagnostico}) # Cria um DataFrame para facilitar o uso do Seaborn
 
-    # Criando um DataFrame para facilitar o uso do Seaborn
-    df_plot = pd.DataFrame({'UMAP1': embedding[:, 0], 'UMAP2': embedding[:, 1], 'Cluster': labels, 'Diagnóstico': diagnostico})
-
-    plt.figure(figsize=(10, 8))  # Define o tamanho da figura
-    sns.scatterplot(data=df_plot, x='UMAP1', y='UMAP2', hue='Cluster', style='Diagnóstico', palette='viridis', s=50)  # Cria o scatter plot usando Seaborn.
-                                                                                                                     # 'hue' define a cor com base nos clusters, 'style' define o marcador com base no diagnóstico.
-                                                                                                                     # 'palette' define a paleta de cores. 's' define o tamanho do ponto.
-
-    plt.title(titulo)  # Define o título do gráfico
-    plt.xlabel('UMAP 1')  # Rótulo do eixo x
-    plt.ylabel('UMAP 2')  # Rótulo do eixo y
-    plt.legend(title='Diagnóstico')  # Adiciona a legenda com o título "Diagnóstico"
+    plt.figure(figsize=(10, 8)) # Define o tamanho da figura
+    sns.scatterplot(data=df_plot, x='PC1', y='PC2', hue='Cluster', style='Diagnóstico', palette='viridis', s=50) # Cria o scatter plot usando Seaborn
+    plt.title(titulo) # Define o título do gráfico
+    plt.xlabel('Componente Principal 1') # Define o rótulo do eixo x
+    plt.ylabel('Componente Principal 2') # Define o rótulo do eixo y
+    plt.legend(title='Diagnóstico') # Adiciona a legenda
     plt.show()
 
 
-# Visualizando Cluster
-plot_clusters_umap_seaborn(fatores_df.drop('diagnostico_hipertensao', axis=1), clusters_kmeans, fatores_df['diagnostico_hipertensao'], 'Clusters K-Means (UMAP)')
-plot_clusters_umap_seaborn(fatores_df.drop('diagnostico_hipertensao', axis=1), clusters_dbscan, fatores_df['diagnostico_hipertensao'], 'Clusters DBSCAN (UMAP)')
-plot_clusters_umap_seaborn(fatores_amostra_clusters.drop('diagnostico_hipertensao', axis=1), clusters_hierarquico, fatores_amostra_clusters['diagnostico_hipertensao'], 'Clusters Hierárquicos (UMAP)')
+# %% Visualização dos resultados 
+plot_clusters_melhorado(fatores_df.drop('diagnostico_hipertensao', axis=1), clusters_kmeans, fatores_df['diagnostico_hipertensao'], 'Clusters K-Means')
+plot_clusters_melhorado(fatores_df.drop('diagnostico_hipertensao', axis=1), clusters_dbscan, fatores_df['diagnostico_hipertensao'], 'Clusters DBSCAN')
+plot_clusters_melhorado(fatores_amostra_clusters.drop('diagnostico_hipertensao', axis=1), clusters_hierarquico, fatores_amostra_clusters['diagnostico_hipertensao'], 'Clusters Hierárquicos')
 
 # %% Avaliação com Silhouette Score
 silhouette_kmeans = silhouette_score(fatores_df.drop('diagnostico_hipertensao', axis=1), clusters_kmeans, metric='euclidean')
