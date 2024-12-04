@@ -351,9 +351,5 @@ plot_umap_distribuicao(fatores_df_normalizado, fatores_umap_normalizado, 'diagno
 fatores_df.to_csv(r'C:\Users\maype\Desktop\projetos\Trabalho Prático AM2\data\base_fatores.csv')
 fatores_df_normalizado.to_csv(r'C:\Users\maype\Desktop\projetos\Trabalho Prático AM2\data\base_fatores_normalizados.csv')
 
-# %%
-# Convertendo os fatores em um DataFrame para facilitar o salvamento
-fatores_umap_df = pd.DataFrame(fatores_umap, columns=[f'Fator_{i+1}' for i in range(fatores_umap.shape[1])])
-fatores_umap_df.to_csv(r'C:\Users\maype\Desktop\projetos\Trabalho Prático AM2\data\fatores_umap.csv')
 
 
