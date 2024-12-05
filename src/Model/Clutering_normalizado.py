@@ -147,22 +147,18 @@ def otimizar_dbscan(data, eps_values, min_samples_values):
 # %% Clusterização com DBSCAN
 
 # Intervalos  para eps e min_samples
-eps_values = np.arange(0.1, 1.0, 0.1)  
-min_samples_values = range(2, 10)       
+#eps_values = np.arange(0.1, 1.0, 0.1)  
+#min_samples_values = range(2, 10)       
 
 # Chamando a função para otimização
-melhor_eps, melhor_min_samples = otimizar_dbscan(fatores_df.drop('diagnostico_hipertensao', axis=1), eps_values, min_samples_values)
+#melhor_eps, melhor_min_samples = otimizar_dbscan(fatores_df.drop('diagnostico_hipertensao', axis=1), eps_values, min_samples_values)
 
 # Aplicando DBSCAN com os melhores parâmetros encontrados
-dbscan = DBSCAN(eps=melhor_eps, min_samples=melhor_min_samples)
+dbscan = DBSCAN(eps=0.5, min_samples=5)
 clusters_dbscan = dbscan.fit_predict(fatores_df.drop('diagnostico_hipertensao', axis=1))
 
 # Salvando os clusters no DataFrame
-fatores_df['cluster_dbscan_otimizado'] = clusters_dbscan
-
-
-
-
+fatores_df['cluster_dbscan'] = clusters_dbscan
 
 
 
@@ -302,8 +298,64 @@ print(f"Pureza Hierárquica: {pureza_hierarquico:.4f}")
 
 
 
+# %% Calculando pureza 
+
+def calcular_pureza_intracluster(df, cluster_column, target_column):
+    """
+    Calcula a pureza intracluster para cada cluster individualmente.
+
+    Args:
+        df: DataFrame com as colunas de clusters e target.
+        cluster_column: Nome da coluna com os rótulos dos clusters (string).
+        target_column: Nome da coluna com a variável target (string).
+
+    Returns:
+        Um dicionário com a pureza de cada cluster.
+    """
+    pureza_clusters = {}
+    grupos = df.groupby(cluster_column)[target_column]
+    
+    for cluster, valores in grupos:
+        total_instancias = len(valores)
+        maior_grupo = valores.value_counts().max()
+        pureza_clusters[cluster] = maior_grupo / total_instancias
+    
+    return pureza_clusters
 
 
-# %% 
-fatores_df[['cluster_kmeans', 'cluster_dbscan']].head()
-# %%
+def calcular_pureza_total(df, cluster_column, target_column):
+    """
+    Calcula a pureza total considerando todos os clusters.
+
+    Args:
+        df: DataFrame com as colunas de clusters e target.
+        cluster_column: Nome da coluna com os rótulos dos clusters (string).
+        target_column: Nome da coluna com a variável target (string).
+
+    Returns:
+        Pureza total (float entre 0 e 1).
+    """
+    grupos = df.groupby(cluster_column)[target_column].apply(lambda x: x.value_counts().max())
+    pureza_total = grupos.sum() / len(df)
+    
+    return pureza_total
+
+
+pureza_total_kmeans = calcular_pureza_total(fatores_df, 'cluster_kmeans', 'diagnostico_hipertensao')
+pureza_total_dbscan = calcular_pureza_total(fatores_df, 'cluster_dbscan', 'diagnostico_hipertensao')
+pureza_total_hierarquico = calcular_pureza_total(fatores_amostra_clusters, 'cluster_hierarquico', 'diagnostico_hipertensao')
+
+pureza_intracluster_kmeans = calcular_pureza_intracluster(fatores_df, 'cluster_kmeans', 'diagnostico_hipertensao')
+pureza_intracluster_dbscan = calcular_pureza_intracluster(fatores_df, 'cluster_dbscan', 'diagnostico_hipertensao')
+pureza_intracluster_hierarquico = calcular_pureza_intracluster(fatores_amostra_clusters, 'cluster_hierarquico', 'diagnostico_hipertensao')
+
+print(f"Pureza total K-Means: {pureza_total_kmeans:.4f}")
+print(f"Pureza intracluster K-Means: {pureza_intracluster_kmeans:.4f}")
+print()
+print(f"Pureza total DBSCAN: {pureza_total_dbscan:.4f}")
+print(f"Pureza Intracluster DBSCAN: {pureza_intracluster_dbscan:.4f}")
+print()
+print(f"Pureza TotaL Hierárquica: {pureza_total_hierarquico:.4f}")
+print(f"Pureza Intracluster Hierárquica: {pureza_intracluster_hierarquico:.4f}")
+
+
