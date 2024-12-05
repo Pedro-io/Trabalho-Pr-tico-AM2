@@ -126,15 +126,39 @@ kmeans = KMeans(n_clusters=k, random_state=0)
 clusters_kmeans = kmeans.fit_predict(fatores_df.drop('diagnostico_hipertensao', axis=1))
 fatores_df['cluster_kmeans'] = clusters_kmeans
 
+# %% Otimização de parametros para o DBSCAN
 
-
+def otimizar_dbscan(data, eps_values, min_samples_values):
+    melhor_eps, melhor_min_samples, melhor_score = None, None, -1
+    for eps in eps_values:
+        for min_samples in min_samples_values:
+            dbscan = DBSCAN(eps=eps, min_samples=min_samples)
+            labels = dbscan.fit_predict(data)
+            # Ignora clusters ruins com apenas 1 cluster ou todos como ruído
+            if len(set(labels)) > 1 and -1 not in labels:
+                score = silhouette_score(data, labels)
+                if score > melhor_score:
+                    melhor_eps, melhor_min_samples, melhor_score = eps, min_samples, score
+    print(f"Melhor eps: {melhor_eps}, Melhor min_samples: {melhor_min_samples}, Melhor Silhouette Score: {melhor_score:.3f}")
+    return melhor_eps, melhor_min_samples
 
 
 
 # %% Clusterização com DBSCAN
-dbscan = DBSCAN(eps=0.5, min_samples=5, metric='euclidean') # Ajuste eps e min_samples conforme necessário
+
+# Intervalos  para eps e min_samples
+eps_values = np.arange(0.1, 1.0, 0.1)  
+min_samples_values = range(2, 10)       
+
+# Chamando a função para otimização
+melhor_eps, melhor_min_samples = otimizar_dbscan(fatores_df.drop('diagnostico_hipertensao', axis=1), eps_values, min_samples_values)
+
+# Aplicando DBSCAN com os melhores parâmetros encontrados
+dbscan = DBSCAN(eps=melhor_eps, min_samples=melhor_min_samples)
 clusters_dbscan = dbscan.fit_predict(fatores_df.drop('diagnostico_hipertensao', axis=1))
-fatores_df['cluster_dbscan'] = clusters_dbscan
+
+# Salvando os clusters no DataFrame
+fatores_df['cluster_dbscan_otimizado'] = clusters_dbscan
 
 
 
